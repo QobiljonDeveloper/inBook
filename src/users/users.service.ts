@@ -1,4 +1,8 @@
-import { BadGatewayException, Injectable } from "@nestjs/common";
+import {
+  BadGatewayException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectModel } from "@nestjs/sequelize";
@@ -29,14 +33,36 @@ export class UsersService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} user`;
+    return this.userModel.findByPk(id);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  findUserByEmail(email: string) {
+    return this.userModel.findOne({ where: { email } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const [updatedCount, [updated]] = await this.userModel.update(
+      updateUserDto,
+      {
+        where: { id },
+        returning: true,
+      }
+    );
+
+    if (updatedCount === 0) {
+      throw new NotFoundException(`User ID ${id} topilmadi`);
+    }
+
+    return updated;
+  }
+
+  async remove(id: number) {
+    const deleted = await this.userModel.destroy({ where: { id } });
+
+    if (deleted === 0) {
+      throw new NotFoundException(`User ID ${id} topilmadi`);
+    }
+
+    return `${id} - IDli user o‘chirildi`;
   }
 }
