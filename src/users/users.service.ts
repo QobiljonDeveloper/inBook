@@ -40,6 +40,10 @@ export class UsersService {
     return this.userModel.findOne({ where: { email } });
   }
 
+  async findByActivationLink(link: string): Promise<User | null> {
+    return this.userModel.findOne({ where: { activation_link: link } });
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto) {
     const [updatedCount, [updated]] = await this.userModel.update(
       updateUserDto,

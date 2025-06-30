@@ -3,7 +3,10 @@ import { ConfigModule } from "@nestjs/config";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { UsersModule } from "./users/users.module";
 import { User } from "./users/models/user.model";
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from "./auth/auth.module";
+import { MailModule } from "./mail/mail.module";
+import { AdminModule } from "./admin/admin.module";
+import { Admin } from "./admin/models/admin.model";
 
 @Module({
   imports: [
@@ -18,13 +21,15 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.PG_USER,
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DB,
-      models: [User],
+      models: [User, Admin],
       autoLoadModels: true,
       logging: false,
       sync: { alter: true },
     }),
     UsersModule,
     AuthModule,
+    MailModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],

@@ -31,7 +31,6 @@ export class User extends Model<User, IUserCreationAttr> {
   })
   declare phone: string;
 
- 
   @Column({
     type: DataType.STRING(50),
     unique: true,
@@ -43,12 +42,10 @@ export class User extends Model<User, IUserCreationAttr> {
   })
   declare password: string;
 
- 
   @Column({
     type: DataType.ENUM("Erkak", "Ayol"),
   })
   declare gender: string;
-
 
   @Column({
     type: DataType.SMALLINT,
@@ -91,5 +88,5 @@ export class User extends Model<User, IUserCreationAttr> {
   @Column({
     type: DataType.STRING(2000),
   })
-  declare refresh_token: string;
+  declare refresh_token: string | null;
 }
