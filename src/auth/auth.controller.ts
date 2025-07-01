@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseIntPipe,
   Post,
   Req,
   Res,
@@ -12,6 +13,7 @@ import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../users/dto/create-user.dto";
 import { SigninUserDto } from "../users/dto/sign-in.dto";
 import { Request, Response } from "express";
+import { CookieGetter } from "../common/decorators/cookie-getter.decorator";
 
 @Controller("auth")
 export class AuthController {
@@ -34,14 +36,23 @@ export class AuthController {
   logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.signout(req, res);
   }
-  @Post("refresh")
+
+  @Post("signout2")
+  signout(@CookieGetter("refreshToken") token: string, @Res() res: Response) {
+    return this.authService.signout2(token, res);
+  }
   @HttpCode(200)
-  refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    return this.authService.refreshToken(req, res);
+  @Post(":id/refresh")
+  refresh(
+    @Param("id", ParseIntPipe) id: number,
+    @CookieGetter("refreshToken") refreshToken: string,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.refreshToken(id, refreshToken, res);
   }
 
   @Get("activate/:link")
   async activate(@Param("link") link: string) {
-    await this.authService.activate(link);
+    return await this.authService.activate(link);
   }
 }

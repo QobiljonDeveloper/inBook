@@ -12,6 +12,10 @@ interface IUserCreationAttr {
 
 @Table({ tableName: "users", createdAt: true, updatedAt: false })
 export class User extends Model<User, IUserCreationAttr> {
+  @ApiProperty({
+    example: 1,
+    description: "Unikal foydalanuvchi ID raqami",
+  })
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -19,51 +23,76 @@ export class User extends Model<User, IUserCreationAttr> {
   })
   declare id: number;
 
+  @ApiProperty({
+    example: "Ali Valiyev",
+    description: "Foydalanuvchining to‘liq ismi",
+  })
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
   })
   declare full_name: string;
 
+  @ApiProperty({
+    example: "+998901234567",
+    description: "Foydalanuvchining telefon raqami",
+  })
   @Column({
     type: DataType.STRING(30),
     allowNull: false,
   })
   declare phone: string;
 
+  @ApiProperty({
+    example: "ali@gmail.com",
+    description: "Foydalanuvchining email manzili (unique)",
+  })
   @Column({
     type: DataType.STRING(50),
     unique: true,
   })
   declare email: string;
 
+  @ApiProperty({
+    example: "$2b$10$hashedpassword",
+    description: "Hashed parol",
+  })
   @Column({
     type: DataType.TEXT,
   })
   declare password: string;
 
+  @ApiProperty({
+    example: "Erkak",
+    description: "Jinsi: Erkak yoki Ayol",
+  })
   @Column({
     type: DataType.ENUM("Erkak", "Ayol"),
   })
   declare gender: string;
 
+  @ApiProperty({
+    example: 1998,
+    description: "Tug‘ilgan yil",
+  })
   @Column({
     type: DataType.SMALLINT,
   })
   declare birth_year: number;
 
   @ApiProperty({
-    example: "false",
-    description: "Foydalanuvchi subscription sotib olganmi ",
+    example: true,
+    description: "Foydalanuvchi premium hisobga egami",
   })
   @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
   })
   declare is_premium: boolean;
+
   @ApiProperty({
-    example: "false",
-    description: "Foydalanuvchi aktivligi ",
+    example: true,
+    description: "Foydalanuvchi akkaunti aktivlashtirilganmi",
   })
   @Column({
     type: DataType.BOOLEAN,
@@ -71,20 +100,14 @@ export class User extends Model<User, IUserCreationAttr> {
   })
   declare is_active: boolean;
 
-  @ApiProperty({
-    example: "false",
-    description: "Activation link ",
-  })
+
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
   })
   declare activation_link: string;
 
-  @ApiProperty({
-    example: "refresh token",
-    description: "Refresh Token ",
-  })
+
   @Column({
     type: DataType.STRING(2000),
   })

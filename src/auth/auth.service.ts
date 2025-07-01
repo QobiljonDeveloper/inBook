@@ -1,7 +1,10 @@
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   ServiceUnavailableException,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -12,7 +15,6 @@ import { UsersService } from "../users/users.service";
 import { SigninUserDto } from "../users/dto/sign-in.dto";
 import { Request, Response } from "express";
 import * as bcrypt from "bcrypt";
-import { retry } from "rxjs";
 import { MailService } from "src/mail/mail.service";
 @Injectable()
 export class AuthService {
@@ -126,46 +128,93 @@ export class AuthService {
       throw new UnauthorizedException("Token noto‘g‘ri yoki eskirgan");
     }
   }
-  async refreshToken(req: Request, res: Response) {
-    const token = req.cookies?.refreshToken;
-    if (!token) {
-      throw new UnauthorizedException("Refresh token topilmadi");
+  // async refreshToken(id: number, req: Request, res: Response) {
+  //   const token = req.cookies?.refreshToken;
+  //   if (!token) {
+  //     throw new UnauthorizedException("Refresh token topilmadi");
+  //   }
+
+  //   try {
+  //     const payload = await this.jwtService.verifyAsync(token, {
+  //       secret: process.env.REFRESH_TOKEN_KEY,
+  //     });
+
+  //     const user = await this.usersService.findOne(id);
+  //     if (!user || !user.refresh_token) {
+  //       throw new UnauthorizedException("Foydalanuvchi mavjud emas");
+  //     }
+
+  //     const isMatch = await bcrypt.compare(token, user.refresh_token);
+  //     if (!isMatch) {
+  //       throw new UnauthorizedException("Refresh token mos emas");
+  //     }
+
+  //     const { accessToken, refreshToken } = await this.generateToken(user);
+
+  //     user.refresh_token = await bcrypt.hash(refreshToken, 7);
+  //     await user.save();
+
+  //     res.cookie("refreshToken", refreshToken, {
+  //       maxAge: +process.env.COOKIE_TIME!,
+  //       httpOnly: true,
+  //     });
+
+  //     return {
+  //       message: "Token yangilandi",
+  //       accessToken,
+  //     };
+  //   } catch (err) {
+  //     console.error(err);
+  //     throw new UnauthorizedException("Refresh token eskirgan yoki noto'g'ri");
+  //   }
+  // }
+
+  async refreshToken(
+    userId: number,
+    refreshTokenFromCookie: string,
+    res: Response
+  ) {
+    const decodedToken = await this.jwtService.decode(refreshTokenFromCookie);
+    console.log(userId);
+    console.log(decodedToken["id"]);
+
+    if (userId !== decodedToken["id"]) {
+      throw new ForbiddenException("Ruxsat etilmagan");
     }
 
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.REFRESH_TOKEN_KEY,
-      });
+    const user = await this.usersService.findOne(userId);
 
-      const user = await this.usersService.findOne(payload.id);
-      if (!user || !user.refresh_token) {
-        throw new UnauthorizedException("Foydalanuvchi mavjud emas");
-      }
-
-      const isMatch = await bcrypt.compare(token, user.refresh_token);
-      if (!isMatch) {
-        throw new UnauthorizedException("Refresh token mos emas");
-      }
-
-      const { accessToken, refreshToken } = await this.generateToken(user);
-
-      user.refresh_token = await bcrypt.hash(refreshToken, 7);
-      await user.save();
-
-      res.cookie("refreshToken", refreshToken, {
-        maxAge: +process.env.COOKIE_TIME!,
-        httpOnly: true,
-      });
-
-      return {
-        message: "Token yangilandi",
-        accessToken,
-      };
-    } catch (err) {
-      throw new UnauthorizedException("Refresh token eskirgan yoki noto'g'ri");
+    if (!user || !user.refresh_token) {
+      throw new NotFoundException("user not found");
     }
+
+    const tokenMatch = await bcrypt.compare(
+      refreshTokenFromCookie,
+      user.refresh_token
+    );
+
+    if (!tokenMatch) {
+      throw new ForbiddenException("forbidden");
+    }
+
+    const { accessToken, refreshToken } = await this.generateToken(user);
+
+    const refresh_token = await bcrypt.hash(refreshToken, 7);
+    await this.usersService.updateRefreshToken(user.id, refresh_token);
+
+    res.cookie("refreshToken", refreshToken, {
+      maxAge: Number(process.env.COOKIE_TIME),
+      httpOnly: true,
+    });
+
+    const response = {
+      message: "User refreshed",
+      userId: user.id,
+      accessToken: accessToken,
+    };
+
+    return response;
   }
-
   async activate(activation_link: string) {
     const user = await this.usersService.findByActivationLink(activation_link);
     if (!user) {
@@ -180,5 +229,28 @@ export class AuthService {
     await user.save();
 
     return { message: "Akkount muvaffaqiyatli faollashtirildi" };
+  }
+
+  async signout2(refreshToken: string, res: Response) {
+    let userData: any;
+    try {
+      const userData = await this.jwtService.verify(refreshToken, {
+        secret: process.env.REFRESH_TOKEN_KEY,
+      });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+
+    if (!userData) {
+      throw new ForbiddenException("User not verified");
+    }
+
+    await this.usersService.updateRefreshToken(userData.id, "");
+
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({
+      message: "User logged out successfully",
+    });
   }
 }

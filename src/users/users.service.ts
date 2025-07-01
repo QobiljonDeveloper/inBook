@@ -69,4 +69,14 @@ export class UsersService {
 
     return `${id} - IDli user o‘chirildi`;
   }
+
+  async updateRefreshToken(id: number, refresh_token: string) {
+    const updatedUser = await this.userModel.update(
+      { refresh_token },
+      {
+        where: { id },
+      }
+    );
+    return updatedUser;
+  }
 }

@@ -7,6 +7,14 @@ import { AuthModule } from "./auth/auth.module";
 import { MailModule } from "./mail/mail.module";
 import { AdminModule } from "./admin/admin.module";
 import { Admin } from "./admin/models/admin.model";
+import { GenreModule } from "./genre/genre.module";
+import { Genre } from "./genre/models/genre.model";
+import { LanguagesModule } from "./languages/languages.module";
+import { CategoriesModule } from "./categories/categories.module";
+import { Language } from "./languages/models/language.model";
+import { Category } from "./categories/models/category.model";
+import { AuthorModule } from "./author/author.module";
+import { Author } from "./author/models/author.model";
 
 @Module({
   imports: [
@@ -21,7 +29,7 @@ import { Admin } from "./admin/models/admin.model";
       username: process.env.PG_USER,
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DB,
-      models: [User, Admin],
+      models: [User, Admin, Genre, Language, Category, Author],
       autoLoadModels: true,
       logging: false,
       sync: { alter: true },
@@ -30,6 +38,10 @@ import { Admin } from "./admin/models/admin.model";
     AuthModule,
     MailModule,
     AdminModule,
+    GenreModule,
+    LanguagesModule,
+    CategoriesModule,
+    AuthorModule,
   ],
   controllers: [],
   providers: [],
