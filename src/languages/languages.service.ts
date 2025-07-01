@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Language } from "./models/language.model";
 import { CreateLanguageDto } from "./dto/create-language.dto";
 import { UpdateLanguageDto } from "./dto/update-language.dto";
+import { Op } from "sequelize";
 
 @Injectable()
 export class LanguagesService {
@@ -12,6 +17,20 @@ export class LanguagesService {
   ) {}
 
   async create(createLanguageDto: CreateLanguageDto): Promise<Language> {
+    const existing = await this.languageModel.findOne({
+      where: {
+        [Op.or]: [
+          { code: createLanguageDto.code },
+          { name: createLanguageDto.name },
+          { flag: createLanguageDto.flag },
+        ],
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException("Bunday til allaqachon mavjud");
+    }
+
     return await this.languageModel.create(createLanguageDto);
   }
 

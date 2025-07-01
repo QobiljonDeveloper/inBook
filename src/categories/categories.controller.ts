@@ -1,14 +1,26 @@
-import { Controller, Get, Post, Body, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+} from "@nestjs/common";
 import { CategoriesService } from "./categories.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Category } from "./models/category.model";
+import { AuthGuard } from "../common/guards/auth.guard";
+import { AdminSelfGuard } from "../common/guards/admin.serlf.guard";
+import { IsCreatorGuard } from "../common/guards/is_creator.guard";
 
 @ApiTags("Categories")
 @Controller("categories")
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @UseGuards(AuthGuard, IsCreatorGuard)
   @Post()
   @ApiOperation({ summary: "Yangi kategoriya yaratish" })
   @ApiResponse({
@@ -19,7 +31,6 @@ export class CategoriesController {
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
-
   @Get()
   @ApiOperation({ summary: "Barcha kategoriyalarni olish" })
   @ApiResponse({
@@ -30,7 +41,6 @@ export class CategoriesController {
   findAll() {
     return this.categoriesService.findAll();
   }
-
   @Get(":id")
   @ApiOperation({ summary: "ID orqali bitta kategoriya olish" })
   @ApiResponse({
@@ -41,7 +51,7 @@ export class CategoriesController {
   findOne(@Param("id") id: string) {
     return this.categoriesService.findOne(+id);
   }
-
+  @UseGuards(AuthGuard, IsCreatorGuard)
   @Delete(":id")
   @ApiOperation({ summary: "Kategoriya o‘chirish" })
   @ApiResponse({ status: 200, description: "Kategoriya o‘chirildi" })

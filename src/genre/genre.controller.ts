@@ -7,18 +7,21 @@ import {
   Patch,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from "@nestjs/common";
 import { GenreService } from "./genre.service";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Genre } from "./models/genre.model";
+import { IsCreatorGuard } from "../common/guards/is_creator.guard";
+import { AuthGuard } from "../common/guards/auth.guard";
 
 @ApiTags("Genres")
 @Controller("genres")
 export class GenreController {
   constructor(private readonly genreService: GenreService) {}
-
+  @UseGuards(AuthGuard, IsCreatorGuard)
   @Post()
   @ApiOperation({ summary: "Yangi janr yaratish" })
   @ApiResponse({
@@ -40,7 +43,6 @@ export class GenreController {
   findAll() {
     return this.genreService.findAll();
   }
-
   @Get(":id")
   @ApiOperation({ summary: "ID bo‘yicha janrni olish" })
   @ApiResponse({
@@ -51,7 +53,7 @@ export class GenreController {
   findOne(@Param("id", ParseIntPipe) id: number) {
     return this.genreService.findOne(id);
   }
-
+  @UseGuards(AuthGuard, IsCreatorGuard)
   @Patch(":id")
   @ApiOperation({ summary: "ID bo‘yicha janrni yangilash" })
   @ApiResponse({
@@ -65,7 +67,7 @@ export class GenreController {
   ) {
     return this.genreService.update(id, updateGenreDto);
   }
-
+  @UseGuards(AuthGuard, IsCreatorGuard)
   @Delete(":id")
   @ApiOperation({ summary: "ID bo‘yicha janrni o‘chirish" })
   @ApiResponse({

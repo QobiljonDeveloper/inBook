@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Category } from "./models/category.model";
 import { CreateCategoryDto } from "./dto/create-category.dto";
@@ -9,8 +13,15 @@ export class CategoriesService {
     @InjectModel(Category)
     private categoryModel: typeof Category
   ) {}
-
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
+    const existing = await this.categoryModel.findOne({
+      where: { name: createCategoryDto.name },
+    });
+
+    if (existing) {
+      throw new BadRequestException("Bunday kategoriya allaqachon mavjud");
+    }
+
     return await this.categoryModel.create(createCategoryDto);
   }
 

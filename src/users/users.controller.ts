@@ -14,32 +14,34 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { UserGuard } from "../common/guards/user.guard";
 import { SelfGuard } from "../common/guards/self.guard";
 import { PremiumGuard } from "../common/guards/isPremium.guard";
+import { AuthGuard } from "../common/guards/auth.guard";
 
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
-  @UseGuards(UserGuard)
+  @UseGuards(AuthGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
-  @UseGuards(UserGuard, SelfGuard)
+  @UseGuards(AuthGuard, UserGuard, SelfGuard)
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.usersService.findOne(+id);
   }
-  @UseGuards(UserGuard, SelfGuard, PremiumGuard)
+  @UseGuards(AuthGuard, UserGuard, SelfGuard, PremiumGuard)
   @Patch(":id")
   update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
 
+  @UseGuards(AuthGuard, UserGuard, SelfGuard)
   @Delete(":id")
   remove(@Param("id") id: string) {
     return this.usersService.remove(+id);

@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+} from "@nestjs/common";
 import { AuthorsService } from "./author.service";
 import { CreateAuthorDto } from "./dto/create-author.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Author } from "./models/author.model";
+import { IsCreatorGuard } from "../common/guards/is_creator.guard";
+import { AuthGuard } from "../common/guards/auth.guard";
 
 @ApiTags("Authors")
 @Controller("authors")
@@ -19,7 +29,7 @@ export class AuthorsController {
   create(@Body() createAuthorDto: CreateAuthorDto) {
     return this.authorsService.create(createAuthorDto);
   }
-
+  @UseGuards(AuthGuard, IsCreatorGuard)
   @Get()
   @ApiOperation({ summary: "Barcha mualliflarni olish" })
   @ApiResponse({
@@ -37,7 +47,7 @@ export class AuthorsController {
   findOne(@Param("id") id: string) {
     return this.authorsService.findOne(+id);
   }
-
+  @UseGuards(AuthGuard, IsCreatorGuard)
   @Delete(":id")
   @ApiOperation({ summary: "Muallifni o‘chirish" })
   @ApiResponse({
