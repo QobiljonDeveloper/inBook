@@ -35,7 +35,7 @@ export class LanguagesService {
   }
 
   async findAll(): Promise<Language[]> {
-    return await this.languageModel.findAll();
+    return await this.languageModel.findAll({ include: { all: true } });
   }
 
   async findOne(id: number): Promise<Language> {
