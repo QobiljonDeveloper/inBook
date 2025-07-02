@@ -4,9 +4,10 @@ import { LanguagesController } from "./languages.controller";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { Language } from "./models/language.model";
 import { JwtModule } from "@nestjs/jwt";
+import { AdminModule } from "../admin/admin.module";
 
 @Module({
-  imports: [SequelizeModule.forFeature([Language]), JwtModule],
+  imports: [SequelizeModule.forFeature([Language]), JwtModule, AdminModule],
   controllers: [LanguagesController],
   providers: [LanguagesService],
 })
