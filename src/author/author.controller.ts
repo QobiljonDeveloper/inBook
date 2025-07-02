@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Patch,
 } from "@nestjs/common";
 import { AuthorsService } from "./author.service";
 import { CreateAuthorDto } from "./dto/create-author.dto";
@@ -13,6 +14,7 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Author } from "./models/author.model";
 import { IsCreatorGuard } from "../common/guards/is_creator.guard";
 import { AuthGuard } from "../common/guards/auth.guard";
+import { UpdateAuthorDto } from "./dto/update-author.dto";
 
 @ApiTags("Authors")
 @Controller("authors")
@@ -47,6 +49,18 @@ export class AuthorsController {
   findOne(@Param("id") id: string) {
     return this.authorsService.findOne(+id);
   }
+
+  @UseGuards(AuthGuard, IsCreatorGuard)
+  @Patch(":id")
+  @ApiOperation({ summary: "Muallif ma'lumotlarini yangilash" })
+  @ApiResponse({
+    status: 200,
+    description: "Muallif muvaffaqiyatli yangilandi",
+    type: Author,
+  })
+  update(@Param("id") id: string, @Body() updateAuthorDto: UpdateAuthorDto) {
+    return this.authorsService.update(+id, updateAuthorDto);
+  }
   @UseGuards(AuthGuard, IsCreatorGuard)
   @Delete(":id")
   @ApiOperation({ summary: "Muallifni o‘chirish" })
@@ -58,3 +72,4 @@ export class AuthorsController {
     return this.authorsService.remove(+id);
   }
 }
+

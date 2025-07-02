@@ -13,7 +13,7 @@ import { UpdateAudioBookDto } from "./dto/update-audio_book.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AudioBook } from "./models/audio_book.model";
 
-@ApiTags("AudioBook") // Swagger UI da kategoriyani bildiradi
+@ApiTags("AudioBook") 
 @Controller("audio-book")
 export class AudioBookController {
   constructor(private readonly audioBookService: AudioBookService) {}
