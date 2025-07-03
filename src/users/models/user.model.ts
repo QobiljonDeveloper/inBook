@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
+import { Subscription } from "../../subscription/models/subscription.model";
 
 interface IUserCreationAttr {
   full_name: string;
@@ -100,16 +101,17 @@ export class User extends Model<User, IUserCreationAttr> {
   })
   declare is_active: boolean;
 
-
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
   })
   declare activation_link: string;
 
-
   @Column({
     type: DataType.STRING(2000),
   })
   declare refresh_token: string | null;
+
+  @HasMany(() => Subscription)
+  subscription: Subscription[];
 }

@@ -28,7 +28,9 @@ import { AudioPartsModule } from "./audio-parts/audio-parts.module";
 import { AudioPart } from "./audio-parts/models/audio-part.model";
 import { Bot } from "./bot/models/bot.model";
 import { Otp } from "./users/models/otp.model";
-import { BooksGenreModule } from './books-genre/books-genre.module';
+import { BooksGenreModule } from "./books-genre/books-genre.module";
+import { SubscriptionModule } from "./subscription/subscription.module";
+import { Subscription } from "./subscription/models/subscription.model";
 
 @Module({
   imports: [
@@ -64,6 +66,7 @@ import { BooksGenreModule } from './books-genre/books-genre.module';
         AudioPart,
         Bot,
         Otp,
+        Subscription,
       ],
       autoLoadModels: true,
       logging: false,
@@ -83,6 +86,7 @@ import { BooksGenreModule } from './books-genre/books-genre.module';
     BookModule,
     AudioPartsModule,
     BooksGenreModule,
+    SubscriptionModule,
   ],
   controllers: [],
   providers: [],
