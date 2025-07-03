@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/sequelize";
+import { Subscription } from "./models/subscription.model";
+import { CreateSubscriptionDto } from "./dto/create-subscription.dto";
+import { UpdateSubscriptionDto } from "./dto/update-subscription.dto";
 
 @Injectable()
 export class SubscriptionService {
-  create(createSubscriptionDto: CreateSubscriptionDto) {
-    return 'This action adds a new subscription';
+  constructor(
+    @InjectModel(Subscription)
+    private readonly subscriptionModel: typeof Subscription
+  ) {}
+
+  async create(createSubscriptionDto: CreateSubscriptionDto) {
+    const subscription = await this.subscriptionModel.create(
+      createSubscriptionDto
+    );
+    return subscription;
   }
 
-  findAll() {
-    return `This action returns all subscription`;
+  async findAll() {
+    return this.subscriptionModel.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subscription`;
+  async findOne(id: number) {
+    return this.subscriptionModel.findByPk(id);
   }
 
-  update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
-    return `This action updates a #${id} subscription`;
+  async update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
+    const subscription = await this.subscriptionModel.findByPk(id);
+    if (!subscription) return null;
+    return subscription.update(updateSubscriptionDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} subscription`;
+  async remove(id: number) {
+    const subscription = await this.subscriptionModel.findByPk(id);
+    if (!subscription) return null;
+    await subscription.destroy();
+    return { message: "Subscription deleted successfully" };
   }
 }

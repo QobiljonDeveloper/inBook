@@ -6,9 +6,14 @@ import {
   ForeignKey,
   BelongsTo,
   Index,
+  HasMany,
+  BelongsToMany,
 } from "sequelize-typescript";
 import { ApiProperty } from "@nestjs/swagger";
-import { Author } from "src/author/models/author.model"; 
+import { Author } from "src/author/models/author.model";
+import { BookMark } from "../../book-marks/models/book-mark.model";
+import { Collection } from "../../collection/models/collection.model";
+import { BookCollection } from "../../book-collection/models/book-collection.model";
 
 interface IBookCreationAttr {
   publisher_year: Date;
@@ -35,4 +40,10 @@ export class Book extends Model<Book, IBookCreationAttr> {
 
   @BelongsTo(() => Author)
   author: Author;
+
+  @HasMany(() => BookMark)
+  bookMark: BookMark[];
+
+  @BelongsToMany  (() => Collection, () => BookCollection)
+  collections: Collection[];
 }

@@ -5,11 +5,14 @@ import { InjectBot } from "nestjs-telegraf";
 import { BOT_NAME } from "../app.constants";
 import { Context, Markup, Telegraf } from "telegraf";
 import { isErrored } from "stream";
+import { Library } from "./library/models/library.model";
+import { Op } from "sequelize";
 
 @Injectable()
 export class BotService {
   constructor(
     @InjectModel(Bot) private readonly botModel: typeof Bot,
+    @InjectModel(Library) private readonly libraryModel: typeof Library,
     @InjectBot(BOT_NAME) private readonly bot: Telegraf<Context>
   ) {}
 
@@ -47,7 +50,7 @@ export class BotService {
         await ctx.replyWithHTML(
           `Ushbu Bot InBook Premium foydalanuvchilari uchun kitob izlash imkoniyatini beradi`,
           {
-            ...Markup.removeKeyboard(),
+            ...Markup.keyboard([["📚Kutubxona", "📕Kitob"]]).resize(),
           }
         );
       }
@@ -134,6 +137,95 @@ export class BotService {
       return true;
     } catch (error) {
       console.log(`❌ Error on Send OTP: `, error);
+    }
+  }
+
+  async onText(ctx: Context) {
+    try {
+      const user_id = ctx.from?.id;
+      const user = await this.botModel.findByPk(user_id);
+
+      if (!user) {
+        await ctx.replyWithHTML(`Iltimos, <b>/start</b> tugmasini bosing!`, {
+          ...Markup.keyboard([["/start"]]).resize(),
+        });
+      } else {
+        if ("text" in ctx.message!) {
+          const library = await this.libraryModel.findOne({
+            where: { user_id, last_state: { [Op.ne]: "finish" } },
+            order: [["id", "DESC"]],
+          });
+          if (library) {
+            const userInputText = ctx.message.text;
+            switch (library.last_state) {
+              case "name":
+                library.name = userInputText;
+                library.last_state = "address";
+                await library.save();
+                await ctx.replyWithHTML("Kutubxona manzilini kiriting: ");
+                break;
+              case "address":
+                library.address = userInputText;
+                library.last_state = "location";
+                await library.save();
+                await ctx.replyWithHTML("Kutubxona lokatsiyasini yuboring: ", {
+                  ...Markup.keyboard([
+                    [Markup.button.locationRequest("Manzil tanla")],
+                  ]).resize(),
+                });
+                break;
+              case "phone_number":
+                library.phone_number = userInputText;
+                library.last_state = "finish";
+                await library.save();
+                await ctx.replyWithHTML("Yangi kutubxona qo'shildi: ", {
+                  ...Markup.keyboard([
+                    ["Yangi kutubxona qo'shish", "Barcha kutubxonalar"],
+                  ]).resize(),
+                });
+                break;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log("Error on Text: ", error);
+    }
+  }
+  async onLocation(ctx: Context) {
+    try {
+      if ("location" in ctx.message!) {
+        const user_id = ctx.from?.id;
+        const user = await this.botModel.findByPk(user_id);
+
+        if (!user) {
+          await ctx.replyWithHTML(`Iltimos, <b>/start</b> tugmasini bosing!`, {
+            ...Markup.keyboard([["/start"]]).resize(),
+          });
+        } else {
+          const library = await this.libraryModel.findOne({
+            where: { user_id, last_state: "location" },
+            order: [["id", "DESC"]],
+          });
+          if (library) {
+            library.location =
+              ctx.message.location.latitude +
+              "|" +
+              ctx.message.location.longitude;
+
+            library.last_state = "phone_number";
+            await library.save();
+            await ctx.replyWithHTML(
+              "Kutubxona telefonin kiriting(masalan, 99-123-45-67): ",
+              {
+                ...Markup.removeKeyboard(),
+              }
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.log("Error on Location: ", error);
     }
   }
 }

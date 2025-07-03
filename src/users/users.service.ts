@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -13,7 +14,8 @@ import * as otpGenerator from "otp-generator";
 import { BotService } from "src/bot/bot.service";
 import { Otp } from "./models/otp.model";
 import { AddMinutesToDate } from "src/common/helpers/addMinutes";
-import { encode } from "src/common/helpers/crypto";
+import { decode, encode } from "src/common/helpers/crypto";
+import { VerifyOtpDto } from "./dto/verfify.otp.dto";
 @Injectable()
 export class UsersService {
   constructor(
@@ -113,15 +115,62 @@ export class UsersService {
     const details = {
       timestamp: now,
       phone_number,
-      otp,
-      expiration_time,
+      otp_id: dbOtp.id,
     };
 
     const encodedData = await encode(JSON.stringify(details));
 
     return {
       message: "Otp Botga yuborildi",
-      verification_code: encodedData,
+      verification_key: encodedData,
+    };
+  }
+
+  async verfyOtp(verifyOtpDto: VerifyOtpDto) {
+    const { phone, verification_key, otp } = verifyOtpDto;
+
+    const decodedData = await decode(verification_key);
+    const details = JSON.parse(decodedData);
+
+    if (details.phone_number != phone) {
+      throw new BadRequestException("Otp bu telefon raqamga yuborilmagan");
+    }
+
+    const resultOtp = await this.otpModel.findOne({
+      where: { id: details.otp_id },
+    });
+
+    if (resultOtp == null) {
+      throw new BadRequestException("bunday OTP mavjud emas");
+    }
+
+    if (resultOtp.verified) {
+      throw new BadRequestException("Bu OTP avval tekshirilgan");
+    }
+
+    if (resultOtp.expiration_time < new Date()) {
+      throw new BadRequestException("Bu OTPning vaqti o'tib ketgan");
+    }
+
+    if (otp != resultOtp.otp) {
+      throw new BadRequestException("OTP noto'g'ri");
+    }
+
+    const user = await this.userModel.update(
+      { is_premium: true },
+      { where: { phone }, returning: true }
+    );
+
+    if (!user[1][0]) {
+      throw new BadRequestException("Bunday foydalanuvchi yo'q");
+    }
+
+    resultOtp.verified = true;
+    await resultOtp.save();
+
+    return {
+      message: "Siz premium user bo'ldingiz",
+      user: user[1][0],
     };
   }
 }

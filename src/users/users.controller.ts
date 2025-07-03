@@ -16,6 +16,7 @@ import { SelfGuard } from "../common/guards/self.guard";
 import { PremiumGuard } from "../common/guards/isPremium.guard";
 import { AuthGuard } from "../common/guards/auth.guard";
 import { PhoneUserDto } from "./dto/phone-user.dto";
+import { VerifyOtpDto } from "./dto/verfify.otp.dto";
 
 @Controller("users")
 export class UsersController {
@@ -51,5 +52,10 @@ export class UsersController {
   @Post("new-otp")
   newOtp(@Body() phoneUserDto: PhoneUserDto) {
     return this.usersService.newOtp(phoneUserDto);
+  }
+
+  @Post("verify-otp")
+  verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    return this.usersService.verfyOtp(verifyOtpDto);
   }
 }

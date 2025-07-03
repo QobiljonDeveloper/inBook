@@ -28,6 +28,21 @@ export class BotUpdate {
   async onStop(@Ctx() ctx: Context) {
     await this.botService.onStop(ctx);
   }
+
+  @On("location")
+  async onLocation(@Ctx() ctx: Context) {
+    await this.botService.onLocation(ctx);
+
+    // console.log(ctx.message.location);
+    // await ctx.reply(String(ctx.message.location.latitude));
+    // await ctx.reply(String(ctx.message.location.longitude));
+
+    // await ctx.replyWithLocation(
+    //   ctx.message.location.latitude,
+    //   ctx.message.location.longitude
+    // );
+  }
+
   // @On("photo")
   // async onPhoto(@Ctx() ctx: Context) {
   //   if ("photo" in ctx.message!) {
@@ -72,19 +87,7 @@ export class BotUpdate {
   //     await ctx.reply(String(ctx.message.contact.user_id));
   //   }
   // }
-  // @On("location")
-  // async onLocation(@Ctx() ctx: Context) {
-  //   if ("location" in ctx.message!) {
-  //     console.log(ctx.message.location);
-  //     await ctx.reply(String(ctx.message.location.longitude));
-  //     await ctx.reply(String(ctx.message.location.latitude));
 
-  //     await ctx.replyWithLocation(
-  //       ctx.message.location.latitude,
-  //       ctx.message.location.longitude
-  //     );
-  //   }
-  // }
   // @On("voice")
   // async onVoice(@Ctx() ctx: Context) {
   //   if ("voice" in ctx.message!) {
@@ -178,13 +181,7 @@ export class BotUpdate {
   // }
   @On("text")
   async onText(@Ctx() ctx: Context) {
-    if ("text" in ctx.message!) {
-      if (ctx.message.text == "hi") {
-        ctx.replyWithHTML(`<b>Hello</b>`);
-      } else {
-        ctx.replyWithHTML(ctx.message.text);
-      }
-    }
+    await this.botService.onText(ctx);
   }
   @On("message")
   async onMessage(@Ctx() ctx: Context) {

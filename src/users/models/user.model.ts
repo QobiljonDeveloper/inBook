@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
 import { Subscription } from "../../subscription/models/subscription.model";
+import { BookMark } from "../../book-marks/models/book-mark.model";
 
 interface IUserCreationAttr {
   full_name: string;
@@ -114,4 +115,7 @@ export class User extends Model<User, IUserCreationAttr> {
 
   @HasMany(() => Subscription)
   subscription: Subscription[];
+
+  @HasMany(() => BookMark)
+  bookMark: BookMark[];
 }
