@@ -191,6 +191,10 @@ export class BotService {
     } catch (error) {
       console.log("Error on Text: ", error);
     }
+
+
+
+
   }
   async onLocation(ctx: Context) {
     try {
